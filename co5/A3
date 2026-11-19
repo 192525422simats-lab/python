@@ -1,0 +1,47 @@
+
+import matplotlib.pyplot as plt
+import statistics
+
+stations = ["Adyar", "Guindy", "Velachery", "Tambaram"]
+pm25 = [48, 95, 65, 80]
+temperature = [30, 32, 31, 34]
+hours = [8, 10, 12, 14]
+
+# 1. Line chart
+plt.figure()
+plt.plot(stations, pm25, marker="o")
+plt.title("PM2.5 Trend")
+plt.xlabel("Station")
+plt.ylabel("PM2.5")
+plt.show()
+
+# 2. Bar chart
+plt.figure()
+plt.bar(stations, pm25)
+plt.title("Station Comparison")
+plt.xlabel("Station")
+plt.ylabel("PM2.5")
+plt.show()
+
+# 3. Scatter plot
+plt.figure()
+plt.scatter(temperature, pm25)
+plt.title("Temperature vs PM2.5")
+plt.xlabel("Temperature")
+plt.ylabel("PM2.5")
+plt.show()
+
+# 4. Histogram
+plt.figure()
+plt.hist(hours, bins=5)
+plt.title("Pollution by Hour")
+plt.xlabel("Hour")
+plt.ylabel("Frequency")
+plt.show()
+
+# Daily summary
+print("Minimum:", min(pm25))
+print("Maximum:", max(pm25))
+print("Mean:", statistics.mean(pm25))
+print("Valid readings:", len(pm25))
+
