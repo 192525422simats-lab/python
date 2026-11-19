@@ -1,0 +1,106 @@
+
+import re
+from collections import Counter
+
+POSITIVE = {
+    "good", "clean", "fast", "helpful", "improved", "excellent"
+}
+
+NEGATIVE = {
+    "bad", "dirty", "slow", "rude", "smoke", "broken", "pollution"
+}
+
+NEGATORS = {"not", "never", "no"}
+
+def sentiment_score(text):
+    words = re.findall(r"\b\w+\b", text.lower())
+    total = 0
+
+    for i, word in enumerate(words):
+        value = 0
+
+        if word in POSITIVE:
+            value = 1
+        elif word in NEGATIVE:
+            value = -1
+
+        if i > 0 and words[i - 1] in NEGATORS:
+            value = -value
+
+        total += value
+
+    return total
+
+def sentiment_label(text):
+    score = sentiment_score(text)
+
+    if score > 0:
+        return "Positive"
+    elif score < 0:
+        return "Negative"
+    return "Neutral"
+
+def summarise(text, count=2):
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+
+    words = re.findall(r"\b[a-zA-Z]+\b", text.lower())
+
+    stop_words = {
+        "the", "is", "a", "an", "and", "are",
+        "was", "were", "to", "of", "in", "on"
+    }
+
+    frequency = Counter(
+        word for word in words if word not in stop_words
+    )
+
+    ranked = []
+
+    for index, sentence in enumerate(sentences):
+        sentence_words = re.findall(r"\b[a-zA-Z]+\b", sentence.lower())
+        score = sum(frequency[word] for word in sentence_words)
+        ranked.append((score, index, sentence))
+
+    selected = sorted(
+        sorted(ranked, key=lambda x: x[0], reverse=True)[:count],
+        key=lambda x: x[1]
+    )
+
+    return " ".join(sentence for _, _, sentence in selected)
+
+def chatbot(question):
+    question = question.lower()
+
+    if "adyar" in question and "pm2.5" in question:
+        return "The PM2.5 reading for Adyar is 48."
+
+    elif "guindy" in question and "pm2.5" in question:
+        return "The PM2.5 reading for Guindy is 95."
+
+    elif "help" in question:
+        return "Ask about PM2.5 readings for Adyar or Guindy."
+
+    return "Sorry, I could not understand your question."
+
+complaints = [
+    "Roads are clean and the bus was fast.",
+    "Smoke from the factory makes the air bad.",
+    "The staff were not helpful.",
+    "The air quality has improved.",
+    "The road is dirty and full of pollution."
+]
+
+for complaint in complaints:
+    print("Complaint:", complaint)
+    print("Sentiment:", sentiment_label(complaint))
+    print()
+
+text = (
+    "Air pollution is increasing in the city. "
+    "People complain about smoke and dirty roads. "
+    "The pollution board should improve air quality."
+)
+
+print("Summary:", summarise(text))
+print("Chatbot:", chatbot("What is the PM2.5 in Adyar today?"))
+
