@@ -1,0 +1,65 @@
+
+import sqlite3
+import csv
+
+con = sqlite3.connect("air_quality.db")
+cur = con.cursor()
+
+cur.execute("""
+CREATE TABLE IF NOT EXISTS stations (
+    station_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    station_name TEXT UNIQUE,
+    temperature_unit TEXT
+)
+""")
+
+cur.execute("""
+CREATE TABLE IF NOT EXISTS readings (
+    reading_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    station_id INTEGER,
+    date TEXT,
+    hour INTEGER,
+    pm25 REAL,
+    pm10 REAL,
+    no2 REAL,
+    temperature REAL,
+    FOREIGN KEY(station_id) REFERENCES stations(station_id)
+)
+""")
+
+def add_station(name, unit="C"):
+    cur.execute(
+        "INSERT OR IGNORE INTO stations (station_name, temperature_unit) VALUES (?, ?)",
+        (name, unit)
+    )
+    con.commit()
+
+def add_reading(name, date, hour, pm25, pm10, no2, temperature):
+    add_station(name)
+    cur.execute(
+        "SELECT station_id FROM stations WHERE station_name = ?", (name,)
+    )
+    station_id = cur.fetchone()[0]
+
+    cur.execute("""
+    INSERT INTO readings
+    (station_id, date, hour, pm25, pm10, no2, temperature)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (station_id, date, hour, pm25, pm10, no2, temperature))
+
+    con.commit()
+
+add_reading("Adyar", "2026-10-01", 10, 48, 80, 20, 30)
+add_reading("Guindy", "2026-10-01", 11, 95, 120, 35, 32)
+
+cur.execute("""
+SELECT stations.station_name, AVG(readings.pm25)
+FROM readings
+JOIN stations ON readings.station_id = stations.station_id
+WHERE stations.station_name = ?
+GROUP BY stations.station_name
+""", ("Adyar",))
+
+print("Average PM2.5:", cur.fetchone())
+
+con.close()
